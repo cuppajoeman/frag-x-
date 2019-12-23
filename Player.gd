@@ -1,16 +1,29 @@
 extends Area2D
 
 export var speed = 400
+export var points = 0
+# set the starting weapon
+var current_weapon = load("res://railGun.tscn").instance()
 var screen_size
 
-onready var raycast = $shot_ray
-# Declare member variables here. Examples:
-# var a = 2
-# var b = "text"
+enum Weapons {
+	# HitScan
+	railGun,
+	lightningGun,
+	shotGun,
+	# Projectile
+	rocketLauncher,
+	grendeLauncher,
+	# Melee
+	axe
+}
+
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	screen_size = get_viewport_rect().size
+	# Set the initial weapon
+	add_child(current_weapon)
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
@@ -36,3 +49,15 @@ func _process(delta):
 	# The Aiming
 	var look_vec = get_global_mouse_position() - global_position
 	global_rotation = atan2(look_vec.y, look_vec.x)
+	
+func set_weapon(weapon):
+    var old_weapon = current_weapon
+    remove_child(old_weapon)
+    old_weapon.queue_free()
+    match weapon:
+        Weapons.railGun:
+            current_weapon = load("res://railGun.tscn").instance()
+    add_child(current_weapon)
+	
+func increase_points(num_points):
+	self.points += num_points

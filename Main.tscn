@@ -9,3 +9,6 @@
 position = Vector2( 195.96, 193.798 )
 
 [node name="Map" parent="." instance=ExtResource( 2 )]
+
+[node name="Player2" parent="." instance=ExtResource( 1 )]
+position = Vector2( 765.519, 467.707 )
