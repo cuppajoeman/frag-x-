@@ -1,6 +1,11 @@
-extends Area2D
 
-export var speed = 400
+extends KinematicBody2D
+
+# A = dV/dT so takes 4 seconds to reach max vel
+export var MAX_SPEED = 500
+export var ACCELERATION = 2000
+export var VEL_VECTOR = Vector2.ZERO
+
 export var points = 0
 # set the starting weapon
 var current_weapon = load("res://railGun.tscn").instance()
@@ -26,30 +31,46 @@ func _ready():
 	add_child(current_weapon)
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta):
+func _physics_process(delta):
 	# The Movement
-	var velocity = Vector2()  # The player's movement vector.
-	if Input.is_action_pressed("move_right"):
-		velocity.x += 1
-	if Input.is_action_pressed("move_left"):
-		velocity.x -= 1
-	if Input.is_action_pressed("move_down"):
-		velocity.y += 1
-	if Input.is_action_pressed("move_up"):
-		velocity.y -= 1
-	if velocity.length() > 0:
-	# If 1 and 1 gives sqrt(2)
-		velocity = velocity.normalized() * speed
+	var input_dir = get_input_direction_vector()
+	if input_dir == Vector2.ZERO:
+		# Passing in velocities magnitude
+		apply_friction(ACCELERATION * delta)
+	else:
+		# We are passing our newly calculated velocity
+		update_velocity(input_dir * ACCELERATION * delta)
+	# This updates the vector to a new one that results from the movement
+	# While also moving the node with the given velocity
+	VEL_VECTOR = move_and_slide(VEL_VECTOR)
 	
-	# We now move the position and prevent from leaving the screen
-	position += velocity * delta
-	position.x = clamp(position.x, 0, screen_size.x)
-	position.y = clamp(position.y, 0, screen_size.y)
 	
 	# The Aiming
 	var look_vec = get_global_mouse_position() - global_position
 	global_rotation = atan2(look_vec.y, look_vec.x)
 	
+# MOVEMENT STUFF
+
+func get_input_direction_vector():
+	var dv = Vector2.ZERO
+	dv.x = int(Input.is_action_pressed("move_right")) - int(Input.is_action_pressed("move_left"))
+	dv.y = int(Input.is_action_pressed("move_down")) - int(Input.is_action_pressed("move_up"))
+	return dv.normalized()
+	
+func update_velocity(new_vel):
+	VEL_VECTOR += new_vel
+	VEL_VECTOR = VEL_VECTOR.clamped(MAX_SPEED)
+	
+func apply_friction(amount):
+	# Amount is equal to the same vel we move by
+	if VEL_VECTOR.length() > amount:
+		VEL_VECTOR -= VEL_VECTOR.normalized() * amount
+	else:
+		VEL_VECTOR = Vector2.ZERO
+		
+
+# WEAPON STUFF
+
 func set_weapon(weapon):
     var old_weapon = current_weapon
     remove_child(old_weapon)

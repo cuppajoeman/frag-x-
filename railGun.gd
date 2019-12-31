@@ -9,9 +9,8 @@ func _input(event):
 	if event.is_action_pressed("shoot"):
 		if self.is_colliding():
 			var collider = get_collider()
-			print(collider.name)
-			if collider.name == "Player":
-				collider.increase_points(self.points)
+			if collider.name == "Enemy":
+				# collider.increase_points(self.points)
 				print("hit")
 	
 # Called every frame. 'delta' is the elapsed time since the previous frame.
